@@ -78,7 +78,7 @@ Table 1: Created Variables table.
 All statistical analyses were undertaken using Jupyter lab (alpha 0.26.5) with R (v 3.4.1 on x86_64-w64-mingw32 platform) and RStudio (v 1.0.153). All were installed as part of the Anaconda3 distribution (v 4.4.0). This document was rendered using knitr, pandoc and pdflatex latex engine.
 
 ### Libraries:  
-car(levene.test, vif), multcomp(mcp)
+car(levene.test), multcomp(mcp)
 
 ### Functions used during analyses:  
 *	read.csv() was used to import CSV files into R
@@ -86,7 +86,6 @@ car(levene.test, vif), multcomp(mcp)
 *	summary() was used to print ANOVA summary tables
 *	plot() was used to display residual diagnostic plots and box plots
 * levene.test() used to perform a Levene Test
-* vif() was used to calculate Variation Inflation Factors of predictors
 * confint() used to generate confidence intervals
 * glht() and mcp() to perform multiple comparison tests
 * xtable() used to generate latex tables from summary tables
@@ -162,19 +161,6 @@ chunk.table<-xtable(leveneTest(Diff ~ Cat, data=word), caption="\\doublespacing 
 
 align(chunk.table) <- xalign(chunk.table)
 digits(chunk.table) <- c(0,0,3,3)
-display(chunk.table) <- xdisplay(chunk.table)
-
-print(chunk.table, sanitize.rownames.function = italic.san, sanitize.colnames.function = bold.san, booktabs = TRUE, comment = FALSE, table.placement="H")
-```
-
-To confirm that the assumption of linearity has been met, and to identify multicollinearity issues, we can calculate the Variation Inflation Factor (VIF) for each predictor in our model.\hfill \break
-
-```{r results='asis', echo=FALSE, eval=TRUE}
-
-chunk.table<-xtable(data.frame(VIF=vif(fit)), caption="\\doublespacing \\emph{As the VIF scores are well below 5 (an accepted reasonable cut-off value), we can confirm that the assumption of linearity has been met, and that there isn't multicollinearity among predictors}")
-
-align(chunk.table) <- xalign(chunk.table)
-digits(chunk.table) <-  c(0,1)
 display(chunk.table) <- xdisplay(chunk.table)
 
 print(chunk.table, sanitize.rownames.function = italic.san, sanitize.colnames.function = bold.san, booktabs = TRUE, comment = FALSE, table.placement="H")
