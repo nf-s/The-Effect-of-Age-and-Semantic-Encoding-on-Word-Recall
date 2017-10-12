@@ -1,0 +1,11 @@
+\usepackage{float}
+\usepackage{setspace}
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][2] {
+    \expandafter\origfigure\expandafter[H]
+} {
+    \endorigfigure
+}
+
+\onehalfspacing

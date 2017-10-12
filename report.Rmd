@@ -1,0 +1,232 @@
+---
+title: "The Effect of Age and Semantic Encoding on Word Recall"
+author:
+- affiliation: University of Tasmania
+  name: Nicholas Forbes-Smith
+fontfamily: mathpazo
+output:
+  pdf_document:
+    fig_caption: yes
+    includes:
+      in_header: preamble-latex.tex
+    keep_tex: yes
+    latex_engine: pdflatex
+    template: J:\My Drive\2. UTAS\2017 Sem 2\KMA253 - Data Handling & Statistics 2\Assessments\Project
+      3\latextemplate.tex
+  html_document: default
+  word_document: default
+geometry: margin=1in
+fontsize: 11pt
+endnote: no
+---
+```{r how-to-run, echo=FALSE, eval=FALSE}
+# cd "C:\Program Files\R\R-3.4.1\bin"
+# ./R.exe
+setwd("J:\\My Drive\\2. UTAS\\2017 Sem 2\\KMA253 - Data Handling & Statistics 2\\Assessments\\Project 3")
+rmarkdown::render("Current_report.Rmd")
+```
+
+# Aims
+## To determine whether the following hypotheses, outlined by the researchers, are correct:  
+
+1.	For both the young and old groups, participants who used semantic encoding will recall more words than those who used verbal rehearsal but for the young group, the improvement should be larger.
+
+2.	The young people will recall more words than old group, irrespective of the level of encoding.
+
+3.	Given 1 and 2, the young group who encoded deeply should recall more words than the average of all three of the remaining groups.
+
+# Background
+
+The data set contains measurements of 80 participants, 40 in the "Young" category and 40 in the "Old" category. The 80 participants were given a list of 35 words and asked to memorise them. Half an hour later, the number of words they could recall was recorded as the pre-treatment score. Participants were then randomly allocated to either a "Shallow" encoding group, in which they were asked to memorise another list of 35 words by rehearsing them aloud, or to a "Deep" encoding group. The Deep encoding group was taught how to use semantic encoding to help increase memory and then given the same list of words as the "Shallow" group. The post-treatment number of words recalled was then also recorded.\hfill \break
+
+In order to identify differences between treatments we created a new variable which is equal to the difference between the pre and post-treatment scores for each participant (Post-score - Pre-score). This minimises the effect of individual participant's word recall abilities on the test scores, as some participants naturally have higher abilities than other participants.\hfill \break
+
+## The recorded variables are:
+
+* ID - Identification number of the participant
+* Age - Age category - Young or Old
+* Depth - Depth of processing - Shallow for "verbal rehearsal" or Deep for "semantic encoding"
+* Post - Number of words recalled post treatment
+* Pre - Number of words recalled pre treatment
+
+# Findings
+
+1.	Confirming research expectations, Young participants who used who used semantic encoding were able to recall 2.0 to 5.2 more words than young participants who used verbal rehearsal \emph{[Table 06]}. Contrary to the researchers expectations, old participants didn't show any improvement in word recall between both methods \emph{[Table 05]}.
+
+2.	Contrary to the researchers expectations, Young participants weren't able to recall any more words than old participants, irregardless of depth of processing. \emph{[Table 05]}
+
+3.	Young participants who used semantic encoding were able to recall 1.0 to 3.6 more words than all other participants, which confirms the researchers expectations. \emph{[Table 06]}
+
+# Discussion
+
+\pagebreak
+
+# Statistical Appendix
+
+## Created Variables
+
+Variable Name| Formula
+------------- | -------------
+Diff | Post-Treatment Score $-$ Pre-Treatment Score
+Cat | Age + '.' + Depth
+
+\begin{center}\emph{
+Table 1: Created Variables table.
+}\end{center}
+
+## Computation Methods
+All statistical analyses were undertaken using Jupyter lab (alpha 0.26.5) with R (v 3.4.1 on x86_64-w64-mingw32 platform) and RStudio (v 1.0.153). All were installed as part of the Anaconda3 distribution (v 4.4.0). This document was rendered using knitr, pandoc and pdflatex latex engine.
+
+### Libraries:  
+car(levene.test), multcomp(mcp)
+
+### Functions used during analyses:  
+*	read.csv() was used to import CSV files into R
+*	anova() was used to perform two-way ANOVA
+*	summary() was used to print ANOVA summary tables
+*	plot() was used to display residual diagnostic plots and box plots
+* levene.test() used to perform a Levene Test
+* confint() used to generate confidence intervals
+* glht() and mcp() to perform multiple comparison tests
+* xtable() used to generate latex tables from summary tables
+
+All code use for analyses and document rendering is available at: 
+
+
+## Results
+```{r setup, include=FALSE}
+library(xtable)
+#options(xtable.floating = FALSE)
+
+library(car)
+library(multcomp)
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(fig.pos = 'H')
+
+setwd("J:\\My Drive\\2. UTAS\\2017 Sem 2\\KMA253 - Data Handling & Statistics 2\\Assessments\\Project 3")
+#rmarkdown::render("Current report.Rmd")
+word<-read.table("Word_Recall.txt", sep="\t", header = TRUE)
+word$Diff <- word$Post-word$Pre
+word$Cat <- as.factor(paste(word$Age, word$Depth, sep="."))
+```
+
+The "Cat" variable was created to allow for easy plotting and to define the contrast matrix needed for later analyses. This variable was a concatenation of the "Age" and "Depth" variables separated with a period.\hfill \break
+
+The "Diff" variable was created to minimise the impact of subject-to-subject variability in our analyses. It is equal to the difference between Post-treatment score and Pre-treatment score, or the \emph{improvement} score of treatment.
+
+```{r fig.pos='H', fig.width=6, fig.height=6, echo=FALSE, eval=TRUE, fig.cap="\\emph{The box plots show that there is more of a difference between Diff scores of Deep and Shallow treatment groups compared with Old and Young participants. The bottom boxplot also shows that Young participants who used Deep encoding have higher Diff scores than all other participants on average.}"}
+layout(matrix(c(1,2,3,3), 2, 2, byrow = TRUE))
+plot(Diff ~ Age, data = word, main="Difference in Scores by Age", xlab="Age", ylab="Score Difference (Post-Pre)", cex=.5) 
+plot(Diff ~ Depth, data = word, main="Difference in Scores by Depth", xlab="Depth", ylab="Score Difference (Post-Pre)", cex=.5) 
+plot(Diff ~ Cat, data = word, main="Difference in Scores by Age*Depth", xlab="Age*Depth", ylab="Score Difference (Post-Pre)", cex=.5) 
+```
+
+A two-way ANOVA was then performed to determine whether there are statistically significant differences between Age and Treatment allocation and Post-Pre Treatment score (Diff variable).\hfill \break
+
+```{r results='asis', echo=FALSE, eval=TRUE}
+
+bold.san <- function(x) {
+  paste0('{\\bfseries{', x, '}}')
+}
+italic.san <- function(x){
+  paste0('{\\emph{', x, '}}')
+}
+
+fit <- aov(Diff ~ Age*Depth, data=word)
+test.table<-xtable(summary(fit), caption="\\doublespacing \\emph{The ANOVA summary table reports a significant difference between treatment groups (Depth) and also a significant interaction between treatment group and age of participant (Age). The large p-value for Age indicates that there is no difference between age groups, but this term can't be excluded due to the Age:Depth interaction term being significant}")
+
+align(test.table) <- xalign(test.table)
+digits(test.table) <- c(0,0,2,2,3,3)
+display(test.table) <- xdisplay(test.table)
+
+print(test.table, sanitize.rownames.function = italic.san, sanitize.colnames.function = bold.san, booktabs = TRUE, comment = FALSE, table.placement="H")
+```
+
+The Regression Diagnostic plot shows that all assumptions required for ANOVA have been met.\hfill \break
+
+```{r anovaDiagPlot, fig.pos='H', fig.width=12, fig.height=3, echo=FALSE, eval=TRUE, fig.cap="\\emph{The Residuals vs Fitted plot shows that there is reasonably homogeneous variance across groups and the Normal-QQ plot shows that the assumption of normally distributed residuals has also been met. There are a few outliers, namely 40, 46 and 75, which slightly break normality and have residuals which are 2 starndardised residuals away from 0. They are just within a reasonable margin, so they are probably no cause for concern.}"}
+x=par(mfrow = c(1,4))
+plot(fit)
+par(x)
+```
+
+To confirm homoscedascitity among categories we can use a Levene Test.\hfill \break
+
+```{r leveneTest, results='asis', echo=FALSE, eval=TRUE}
+
+test.table<-xtable(leveneTest(Diff ~ Cat, data=word), caption="\\doublespacing \\emph{The large p-value indicates that the null hypothesis that there is homogeneous variance among groups is reasonable. Therefore, the assumption of homoscedasticity has been met.}")
+
+align(test.table) <- xalign(test.table)
+#digits(test.table) <- c(0,0,2,2,3,3)
+digits(test.table) <- c(0,0,3,3)
+display(test.table) <- xdisplay(test.table)
+
+print(test.table, sanitize.rownames.function = italic.san, sanitize.colnames.function = bold.san, booktabs = TRUE, comment = FALSE, table.placement="H")
+```
+
+In order to determine the actual difference in treatment scores we will perform planned multiple comparison tests. In this case, Priori multiple comparison testing is more appropriate than Post-Hoc testing because the researchers have a predefined set a hypotheses to be tested. Post-hoc testing, such as pair-wise t-tests, will test for differences in each possible combination of factors, including but not limited to the tests outlined by the researchers, and in order to control for multiplicity the p-values must be adjusted according to the family-wise error rate. Therefore, as more tests are performed the p-values must be increasingly adjusted, which increases the change of a Type 2 error occurring. 
+
+Planned comparisons have more statistical power as less p-value adjustment is more required (due to the lower number of tests being performed). They also allow for more complicated comparisons to be made, such as the fourth test outlined below, which compares the Diff score of a single group to that of all remaining groups. \hfill \break
+
+\textbf{Planned comparison tests (predetermined by researchers):}  
+
+\emph{Note: Shallow = "verbal rehearsal" and Deep = "semantic encoding"}
+
+1. Old subjects who used semantic encoding (Deep method) had larger Diff score than Old subjects who used verbal rehearsal (Shallow method).
+2. Young subjects who used Deep method had larger Diff score than Young subjects who used Shallow method.
+3. Young subjects had larger Diff scores than Old subjects
+4. Young subjects who used Deep method had larger Diff scores than all other subjects.
+
+Before we can perform said comparison tests, we must first define a matrix of contrasts.\hfill \break
+
+```{r contrastTable, results='asis', echo=FALSE, eval=TRUE}
+## Define matrix of contrasts
+cntr <- rbind("Old.Deep > Old.Shallow"=c(1,-1,0,0),
+             "Young.Deep > Young.Shallow"=c(0,0,1,-1),
+              "Young > Old"=c(-1/2,-1/2,1/2,1/2),
+              "Young.Deep > Everything Else"=c(-1/3,-1/3,1,-1/3))
+colnames(cntr)<-sort(unique(word$Cat))
+
+test.table<-xtable(cntr, caption="\\doublespacing \\emph{Defined Contrast matrix used for multiple comparison tests}")
+align(test.table) <- xalign(test.table)
+digits(test.table) <- c(0,2,2,2,2)
+display(test.table) <- xdisplay(test.table)
+print(test.table, sanitize.rownames.function = italic.san, sanitize.colnames.function = bold.san, booktabs = TRUE, comment = FALSE, table.placement="H")
+```
+
+Now we can perform the multiple comparison tests. Note all tests are two-sided and have a Holm p-value adjustment.\hfill \break
+
+```{r contrastSummaryTable, results='asis', echo=FALSE, eval=TRUE}
+## Table print adapted from https://stackoverflow.com/questions/19334087/export-result-of-glht-to-latex-in-r
+## Test contrasts
+
+x<-glht(aov(Diff ~ Cat, data=word),mcp(Cat=cntr)) 
+#pq<-summary(x,test=adjusted(type="bonferroni"))$test
+pq<-summary(x)$test
+
+mtests <- cbind(pq$coefficients, pq$sigma, pq$tstat, pq$pvalues)
+error <- attr(pq$pvalues, "error")
+pname <- switch(x$alternativ, 
+                 less = paste("Pr(<", ifelse(x$df ==0, "z", "t"), ")", sep = ""), 
+                 greater = paste("Pr(>", ifelse(x$df == 0, "z", "t"), ")", sep = ""), 
+                 two.sided = paste("Pr(>|", ifelse(x$df == 0, "z", "t"), "|)", sep = ""))                                                                   
+colnames(mtests) <- c("Estimate", "Std. Error", ifelse(x$df ==0, "z value", "t value"), pname)
+
+test.table<-xtable(mtests, caption="\\doublespacing \\emph{The highly significant p-value for 'Young.Deep > Young.Shallow' indicates that there is a significant difference in Diff score between Young participants who used the 'shallow' treatment compared to Young participants who used the 'deep' treatment. Similarly, the highly significant p-value for 'Young.Deep > Everything Else' indicates that there a significant difference in Diff score between Young participants who used the 'deep' threatment compared with all other participants.}")
+
+
+align(test.table) <- xalign(test.table)
+digits(test.table) <- c(0,2,2,2,3)
+display(test.table) <- xdisplay(test.table)
+print(test.table, sanitize.rownames.function = italic.san, sanitize.colnames.function = bold.san, booktabs = TRUE, comment = FALSE, table.placement="H")
+```
+
+In order to determine the magnitude of the difference between the groups we will construct simultaneous confidence intervals with a 95% family-wise error rate (using a Holm adjustment). \hfill \break
+
+```{r contrastCITable, results='asis', echo=FALSE, eval=TRUE}
+test.table<-xtable(confint(x)$confint, caption="\\doublespacing \\emph{Confirming research expectations, Young participants who used who used semantic encoding were able to recall 2 to 5 more words than young participants who used verbal rehersal and 1.0 to 3.6 more words than all other participants combined. Contrary to the researchers expectations, old participants didn't show any imrovement in word recall between both methods and young participants weren't able to recall any more words than old participants, irregardless of depth of processing.}")
+align(test.table) <- xalign(test.table)
+digits(test.table) <- c(0,2,2,2)
+display(test.table) <- xdisplay(test.table)
+print(test.table, sanitize.rownames.function = italic.san, sanitize.colnames.function = bold.san, booktabs = TRUE, comment = FALSE, table.placement="H")
+```
